@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Personas</title>
+</head>
+<body>
+
+  <h2>Registro</h2>
+
+  <form>
+    <input type="text" id="nombre" placeholder="Nombre"><br><br>
+    <input type="text" id="apellido" placeholder="Apellido"><br><br>
+    <input type="text" id="curso" placeholder="Curso"><br><br>
+    <input type="text" id="universidad" placeholder="Universidad"><br><br>
+
+    <button type="button" onclick="guardar()">Guardar</button>
+  </form>
+
+  <h3>Datos guardados:</h3>
+  <ul id="lista"></ul>
+
+  <script>
+    function guardar() {
+      let nombre = document.getElementById("nombre").value;
+      let apellido = document.getElementById("apellido").value;
+      let curso = document.getElementById("curso").value;
+      let universidad = document.getElementById("universidad").value;
+
+      let lista = document.getElementById("lista");
+
+      let nuevo = document.createElement("li");
+      nuevo.textContent = nombre + " " + apellido + " - " + curso + " - " + universidad;
+
+      lista.appendChild(nuevo);
+    }
+  </script>
+
+</body>
+</html>
