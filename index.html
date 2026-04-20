@@ -1,119 +1,214 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro de Personas</title>
+<meta charset="UTF-8">
+<title>Sistema de Registro</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    margin: 0;
+    color: white;
+}
+
+/* HEADER */
+header {
+    background: #0f2027;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+}
+
+/* CONTENEDOR */
+.container {
+    width: 80%;
+    margin: auto;
+    background: white;
+    color: black;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 12px;
+}
+
+/* INPUTS */
+input {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* BOTONES */
+button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-agregar { background: #28a745; }
+.btn-exportar { background: #007bff; }
+.btn-eliminar { background: #dc3545; }
+.btn-editar { background: #ffc107; color: black; }
+
+/* TABLA */
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+th {
+    background: #2a5298;
+    color: white;
+}
+
+td, th {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+</style>
 </head>
+
 <body>
 
-  <h2>Registro</h2>
+<header>
+    📊 Sistema Profesional de Registro de Estudiantes
+</header>
 
-  <form>
-    <input type="text" id="nombre" placeholder="Nombre"><br><br>
-    <input type="text" id="apellido" placeholder="Apellido"><br><br>
-    <input type="text" id="curso" placeholder="Curso"><br><br>
-    <input type="text" id="universidad" placeholder="Universidad"><br><br>
+<div class="container">
 
-    <button type="button" onclick="guardar()">Guardar</button>
-  </form>
-
-  <h3>Datos guardados:</h3>
-  <ul id="lista"></ul>
-
-  <script>
-    function guardar() {
-      let nombre = document.getElementById("nombre").value;
-      let apellido = document.getElementById("apellido").value;
-      let curso = document.getElementById("curso").value;
-      let universidad = document.getElementById("universidad").value;
-
-      let lista = document.getElementById("lista");
-
-      let nuevo = document.createElement("li");
-      nuevo.textContent = nombre + " " + apellido + " - " + curso + " - " + universidad;
-
-      lista.appendChild(nuevo);
-    }
-  </script> <!DOCTYPE html>
-<html>
-<head>
-    <title>Registro de Estudiantes</title>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-</head> <style></style><head>
-    <title>Registro de Estudiantes</title>
-
-    <style>
-        body {
-            font-family: Arial;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 80%;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            margin-top: 40px;
-            border-radius: 10px;
-        }
-    </style>
-
-</head> 
-<body>
+    <h2>Bienvenido 👋</h2>
+    <p>Ingrese los datos del estudiante:</p>
 
     <input id="nombre" placeholder="Nombre">
     <input id="apellido" placeholder="Apellido">
     <input id="curso" placeholder="Curso">
 
-    <button onclick="agregar()">Agregar</button>
-    <button onclick="exportarExcel()">Exportar Excel</button>
+    <br>
 
-    <table border="1">
+    <button class="btn-agregar" onclick="agregar()">Agregar</button>
+    <button class="btn-exportar" onclick="exportarExcel()">Exportar Excel</button>
+
+    <input id="buscar" placeholder="Buscar..." onkeyup="filtrar()">
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Curso</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
         <tbody id="tabla"></tbody>
     </table>
 
-    <script>
-        let estudiantes = [];
+</div>
 
-        function agregar() {
-            let nombre = document.getElementById("nombre").value;
-            let apellido = document.getElementById("apellido").value;
-            let curso = document.getElementById("curso").value;
+<script>
 
-            estudiantes.push({ nombre, apellido, curso });
+let estudiantes = JSON.parse(localStorage.getItem("data")) || [];
 
-            render();
+function guardar() {
+    localStorage.setItem("data", JSON.stringify(estudiantes));
+}
 
-            exportarExcel(); // 👈 AQUÍ VA LA DESCARGA AUTOMÁTICA
-        }
+function render(lista = estudiantes) {
+    let tabla = document.getElementById("tabla");
+    tabla.innerHTML = "";
 
-        function render() {
-            let tabla = document.getElementById("tabla");
-            tabla.innerHTML = "";
+    lista.forEach((e, i) => {
+        tabla.innerHTML += `
+        <tr>
+            <td>${e.nombre}</td>
+            <td>${e.apellido}</td>
+            <td>${e.curso}</td>
+            <td>
+                <button class="btn-editar" onclick="editar(${i})">✏️</button>
+                <button class="btn-eliminar" onclick="eliminar(${i})">❌</button>
+            </td>
+        </tr>`;
+    });
+}
 
-            estudiantes.forEach(e => {
-                tabla.innerHTML += `
-                    <tr>
-                        <td>${e.nombre}</td>
-                        <td>${e.apellido}</td>
-                        <td>${e.curso}</td>
-                    </tr>
-                `;
-            });
-        }
+function agregar() {
+    let nombre = document.getElementById("nombre").value;
+    let apellido = document.getElementById("apellido").value;
+    let curso = document.getElementById("curso").value;
 
-        function exportarExcel() {
-            let ws = XLSX.utils.json_to_sheet(estudiantes);
-            let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Estudiantes");
-            XLSX.writeFile(wb, "registro_estudiantes.xlsx");
-        }
-    </script>
+    if (!nombre || !apellido || !curso) {
+        alert("Completa todos los campos");
+        return;
+    }
 
-</body>
-</html>
+    estudiantes.push({ nombre, apellido, curso });
+
+    guardar();
+    render();
+    limpiar();
+
+    exportarExcel(); // descarga automática
+}
+
+function limpiar() {
+    document.getElementById("nombre").value = "";
+    document.getElementById("apellido").value = "";
+    document.getElementById("curso").value = "";
+}
+
+function eliminar(i) {
+    estudiantes.splice(i, 1);
+    guardar();
+    render();
+}
+
+function editar(i) {
+    let e = estudiantes[i];
+
+    document.getElementById("nombre").value = e.nombre;
+    document.getElementById("apellido").value = e.apellido;
+    document.getElementById("curso").value = e.curso;
+
+    estudiantes.splice(i, 1);
+    guardar();
+    render();
+}
+
+function filtrar() {
+    let texto = document.getElementById("buscar").value.toLowerCase();
+
+    let filtrados = estudiantes.filter(e =>
+        e.nombre.toLowerCase().includes(texto) ||
+        e.curso.toLowerCase().includes(texto)
+    );
+
+    render(filtrados);
+}
+
+function exportarExcel() {
+    let datos = estudiantes.map(e => ({
+        Nombre: e.nombre,
+        Apellido: e.apellido,
+        Curso: e.curso
+    }));
+
+    let ws = XLSX.utils.json_to_sheet(datos);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estudiantes");
+
+    XLSX.writeFile(wb, "registro_estudiantes.xlsx");
+}
+
+render();
+
+</script>
 
 </body>
 </html>
